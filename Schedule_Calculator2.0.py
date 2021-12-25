@@ -1,4 +1,4 @@
-#Schedule_Calculator2.0
+#Daily_Calculator
 
 #-----------------------------------------------------------------------------------
 # This code was written by Viktor Dominguez.
@@ -14,56 +14,77 @@
 
 import datetime
 
+def gates_func(time_string):
+    '''(str) -> [int, int]
+
+    Returns the position of the ':' and the 'A', 'a', 'P', or 'p' in a time string.
+    For these examples, we will have to use print to show the results, otherwise
+    we would not see the results on screen.
+
+    >>> gates_func('1:30 PM')
+    [1,5]
+    >>> gates_func('12:45PM')
+    [2,5]
+    >>> gates_func('3:07AM')
+    [1,4]
+    '''
+    start_gate = time_string.find(':')
+    am_pm = 'aApP'
+    end_gate = 0
+    for char in time_string:
+        if char in am_pm:
+            end_gate = time_string.find(char)
+    return [start_gate, end_gate]
+        
 def start_time_func():
-    '''' (none) -> float
+    '''' (none) -> [float, str]
 
     Returns a decimal time after the user inputs a time.
     Must give 'AM' or 'PM' with time to specify, otherwise
     the program gives an error.    
     '''
     start_time = input('What time did you start your shift?: ')
-
+    start_gate = 0
+    end_gate = 0
     while True:
-        if start_time.find('A') != -1:
-            end_gate = start_time.find('A')
+        if start_time.find('a') != -1:
+            start_gate = gates_func(start_time)[0]
+            end_gate = gates_func(start_time)[1]
             break
-        elif start_time.find('P') != -1:
-            end_gate = start_time.find('P')
-            break
-        elif start_time.find('a') != -1:
-            end_gate = start_time.find('a')
+        elif start_time.find('A') != -1:
+            start_gate = gates_func(start_time)[0]
+            end_gate = gates_func(start_time)[1]
             break
         elif start_time.find('p') != -1:
-            end_gate = start_time.find('p')
+            start_gate = gates_func(start_time)[0]
+            end_gate = gates_func(start_time)[1]
+            break
+        elif start_time.find('P') != -1:
+            start_gate = gates_func(start_time)[0]
+            end_gate = gates_func(start_time)[1]
             break
         else:
-            print('Please specify AM or PM.\n')
+            print('Please specify AM or PM')
             start_time = input('What time did you start your shift?: ')
-    # Need a way to loop back through these statements after this last line....
-    # Use another function
-    
-   
-    start_gate = start_time.find(':')
+            
     hours = int(start_time[:start_gate]) % 12
-    minutes = int(start_time[start_gate+1:end_gate])
-
+    minutes = round(int(start_time[start_gate+1:end_gate]),2)
     if start_time.find('p') != -1 or start_time.find('P') != -1:
-        hours = hours + 12
-    
-    
-    final_time = hours + round(minutes/60,2)
-    
-    return final_time
+        hours = hours + 12    
+    final_time = hours + round(minutes/60,2) 
+    return [final_time, start_time]
 
-def meal_time_func():
-    ''' (none) -> float
+def meal_time_func(start_time):
+    ''' ([float, str]) -> [float, str]
 
     Will ask for starting and ending times of break and returns
     a float that is the decimal equivalent for how much time
-    the user was gone.    
+    the user was gone. Also returns the end time (will be
+    used to check against any inaccuracies for time outside of this
+    function).
     '''
-
-    start_meal = input('What time did you start your break?: ')
+#    start_shift = start_time[1]
+    start_meal = input('What time did you start your break? Hit enter if not on break: ')
     while True:
         if start_meal.find('A') != -1:
             end_gate = start_meal.find('A')
@@ -79,60 +100,38 @@ def meal_time_func():
             break
         else:
             print('Please specify AM or PM.\n')
-            start_meal = input('What time did you start your break?: ')
-    
-    end_meal = input("\nWhat time did you end your break?('N' for 'Not done'): ")
-    if end_meal == 'N' or end_meal == 'n':
-        print('You are still on break.')
-        if datetime.datetime.now().time().hour >=12:
-            end_meal = str(datetime.datetime.now().time().hour%12) + str(':') + str(datetime.datetime.now().time().minute) + str('PM')
-        else:
-            end_meal = str(datetime.datetime.now().time().hour%12) + str(':') + str(datetime.datetime.now().time().minute) + str('AM')
-    
-    
-
-    while True:
-        if end_meal.find('A') != -1:
-            end_gate2 = end_meal.find('A')
-            break
-        elif end_meal.find('a') != -1:
-            end_gate2 = end_meal.find('a')
-            break
-        elif end_meal.find('P') != -1:
-            end_gate2 = end_meal.find('P')
-            break
-        elif end_meal.find('p') != -1:
-            end_gate2 = end_meal.find('p')
-            break
-        else:
-            print('Please specify AM or PM.\n')
-            end_meal = input('What time did you end your break?: ')
-
-    start_gate = start_meal.find(':')
-    start_gate2 = end_meal.find(':')
-
-    hour1 = int(start_meal[:start_gate]) % 12
-    hour2 = int(end_meal[:start_gate2]) % 12
-
-    if start_meal.find('p') != -1 or start_meal.find('P') != -1:
-        hour1 = hour1 + 12
-
-    if end_meal.find('p') != -1 or end_meal.find('P') != -1:
-        hour2 = hour2 + 12
+            start_meal = input('What time did you start your break? Hit enter if not on break: ')
+            if start_meal == '':
+                skip_break = input('Did you skip break today?: ')
+                if skip_break.find('n' or 'N') != -1:       #if you skipped break, your meal should be 0
+                    total_time = 0.0
+                    hours = datetime.datetime.now().time().hour
+                    minutes = datetime.datetime.now().time().minute
+                    if hours > 12:
+                        end_meal = str(hours + ':' + minutes + 'PM')
+                    else:
+                        end_meal = str(hours + ':' + minutes + 'AM')
+                    return [total_time,end_meal]
+                else:                                       #if you did not skip break, but you did not start it (not on meal yet)
+                    hours = datetime.datetime.now().time().hour
+                    minutes = datetime.datetime.now().time().minute
+                    minutes_decimal = round(datetime.datetime.now().time().minute/60,2)
+                    total_time = hours + minutes_decimal
+                    if hours > 12:
+                        end_meal = str(hours%12 + ':' + minutes + 'PM')
+                    else:
+                        end_meal = str(hours + ':' + minutes + 'AM')
+                    return [total_time,end_meal]
+    else:
 
 
-    minutes1 = round(int(start_meal[start_gate + 1: end_gate])/60,2)
-    minutes2 = round(int(end_meal[start_gate2 + 1: end_gate2])/60,2)
-
-    total_time = round((hour2 + minutes2) - (hour1 + minutes1),2)
-
-    return total_time
 
 def end_time_func():
-    ''' (none) -> float
+    ''' (none) -> [float, string]
 
     Takes in the user's input for their clock out punch and
-    returns the decimal hour format of that time.    
+    returns the decimal hour format of that time and the string containing
+    the user's input.    
     '''
     end_time = input("When did you punch out? ('N' if not punched out yet): ")
     if end_time == 'N' or end_time == 'n':
@@ -165,15 +164,19 @@ def end_time_func():
 
     minutes = round(int(end_time[startgate + 1: endgate])/60, 2)
 
-    total = hour + minutes
-    return total
+    if end_time == meal_time_func.end_meal:
+        total = 0
+    else:
+        total = hour + minutes
+    return total,end_time
 
 
 start = start_time_func()
 meal = meal_time_func()
 end = end_time_func()
 
-total = round(end - start - meal,2)
+if meal > end - start:
+    total = round(end - start - meal,2)
 
 print('You worked ' + str(total) + ' hours today. You had a ' + str(meal) + ' hour long meal.')
     
