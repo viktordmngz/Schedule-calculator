@@ -207,4 +207,3 @@ end_shift_str = end_shift_vals[1]
 full_shift = round((end_shift - end_break) + (start_break - start_shift),2)
 print("\nYour shift was " + str(full_shift) + " hours long. Your meal was " + str(full_break) + " hours long.")
 #### if meal is skipped, the program will exit before it gets to this step.
-#### meal should not count toward shift length.
