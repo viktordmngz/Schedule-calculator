@@ -1,4 +1,4 @@
-#Schedule_Calculator2.01
+#Daily_Calculator2.02
 
 #-----------------------------------------------------------------------------------
 # This code was written by Viktor Dominguez.
@@ -36,6 +36,8 @@ def gates_func(time_string):
         if char in am_pm:
             end_gate = time_string.find(char)
     return [start_gate, end_gate]
+
+
         
 def start_time_func():
     '''' (none) -> [float, str]
@@ -45,6 +47,13 @@ def start_time_func():
     the program gives an error.    
     '''
     start_time = input('What time did you start your shift?: ')
+    num_hour = '012'
+    if start_time.find(':') == -1 and len(start_time) >= 3:
+        if start_time[0] == '1':
+            if start_time[1] in num_hour:
+                start_time = start_time[:2] + ':' + start_time[2:]
+        else:
+            start_time = start_time[0] + ':' + start_time[1:]
     if start_time.find(':') == -1:
         if start_time.lower().find('a') != -1 or start_time.lower().find('p') != -1:
             start_time = start_time.strip()[:gates_func(start_time)[1]] + ':00 ' + start_time[gates_func(start_time)[1]:]
@@ -57,14 +66,16 @@ def start_time_func():
     final_time = round(hours + minutes/60,2)
     return[final_time,start_time]
 
-start_shift = start_time_func()[0]
-
+start_shift_vals = start_time_func()
+start_shift = start_shift_vals[0]
+start_shift_str = start_shift_vals[1]
 def start_meal_func(start_time):
     '''(float) -> [flloat, string]
 
     Takes in user input to determine when the start of the meal has taken place.
     3 Scenarios: The user is not on break yet, the user started break but has not ended break yet, the user skipped break.    
     '''
+    num_hour = '012'
     start_meal = input('\nWhat time did you start your break? Hit enter if you did not start one: ')
     if start_meal == '':
         skipped = input('Did you skip your break?: ')
@@ -81,6 +92,12 @@ def start_meal_func(start_time):
             return[final_time,start_meal]
     #### if the user entered a start meal time
     else:
+        if start_meal.find(':') == -1 and len(start_meal) >= 3:
+            if start_meal[0] == '1':
+                if start_meal[1] in num_hour and len(start_meal) > 3:
+                    start_meal = start_meal[:2] + ':' + start_meal[2:]
+            else:
+                start_meal = start_meal[:1] + ':' + start_meal[1:]
         if start_meal.find(':') == -1:
             if start_meal.lower().find('a') != -1 or start_meal.lower().find('p') != -1:
                 start_meal = start_meal.strip()[:gates_func(start_meal)[1]] + ':00 ' + start_meal[gates_func(start_meal)[1]:]
@@ -109,6 +126,7 @@ def end_meal_func(start_meal):
                 end meal has not been entered in and start time is 0 -> Skipped meal, end should also equal 0
                 end meal is entered (must make sure it is >= 30minutes past start meal) -> end will be what user input.
     '''
+    num_hour = '012'
     if start_meal == 0:
         final_time = 0
         return[final_time, None]
@@ -124,7 +142,13 @@ def end_meal_func(start_meal):
             quit()
         return[final_time, None]
     else:
-        if end_meal.find(':') == -1:
+        if end_meal.find(':') == -1 and len(end_meal) >= 3:
+            if end_meal[0] == '1':
+                if end_meal[1] in num_hour and len(end_meal) > 3:
+                    end_meal = end_meal[:2] + ':' + end_meal[2:]
+            else:
+                end_meal = end_meal[:1] + ':' + end_meal[1:]
+        if end_meal.find(':') == -1:        
             if end_meal.lower().find('a') != -1 or end_meal.lower().find('p') != -1:
                 end_meal = end_meal.strip()[:gates_func(end_meal)[1]] + ':00 ' + end_meal[gates_func(end_meal)[1]:]
             else:
@@ -159,6 +183,7 @@ def end_time_func(full_meal, start_meal, start_shift):
     returns the decimal hour format of that time and the string containing
     the user's input.    
     '''
+    num_hour = '012'
     end_time = input('\nWhat time did you end your shift? Hit enter if you still are on the clock: ')
     #### if no end time is put in, the user must still be on the clock. The current time will be used as the end
     if end_time == '':
@@ -181,6 +206,12 @@ def end_time_func(full_meal, start_meal, start_shift):
             print('\nYour shift is currently this long: ' + str(start_meal - start_shift))
             quit()
     else:
+        if end_time.find(':') == -1 and len(end_time) >= 3:
+            if end_time[0] == '1':
+                if end_time[1] in num_hour and len(end_time) > 3:
+                    end_time = end_time[:2] + ':' + end_time[2:]
+            else:
+                end_time = end_time[:1] + ':' + end_time[1:]
         if end_time.find(':') == -1:
             if end_time.lower().find('a') != -1 or end_time.lower().find('p') != -1:
                 end_time = end_time.strip()[:gates_func(end_time)[1]] + ':00 ' + end_time[gates_func(end_time)[1]:]
@@ -207,3 +238,4 @@ end_shift_str = end_shift_vals[1]
 full_shift = round((end_shift - end_break) + (start_break - start_shift),2)
 print("\nYour shift was " + str(full_shift) + " hours long. Your meal was " + str(full_break) + " hours long.")
 #### if meal is skipped, the program will exit before it gets to this step.
+#### meal should not count toward shift length.
